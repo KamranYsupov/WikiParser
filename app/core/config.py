@@ -8,6 +8,14 @@ class Settings(BaseSettings):
     project_name: str = Field(title='Название проекта')
     api_v1_prefix: str = Field(title='Префикс первой версии API', default='/api/v1')
 
+    # region OpenAI
+    openai_base_url: str = Field(
+        title='OpenAI base url',
+        default='https://openrouter.ai/api/v1',
+    )
+    openai_api_key: str = Field(default='OpenAI Api ключ')
+    # endregion
+
     # region БД
     db_user: str = Field(title='Пользователь БД')
     db_password: str = Field(title='Пароль БД')
