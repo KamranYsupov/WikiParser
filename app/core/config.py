@@ -16,6 +16,17 @@ class Settings(BaseSettings):
     openai_api_key: str = Field(default='OpenAI Api ключ')
     # endregion
 
+    # region Wikipedia
+    wiki_api_url: str = Field(
+        title='Wikipedia api url',
+        default='https://en.wikipedia.org/w/api.php',
+    )
+    wiki_base_url: str = Field(
+        title='Wikipedia base url',
+        default='https://en.wikipedia.org',
+    )
+    # endregion
+
     # region БД
     db_user: str = Field(title='Пользователь БД')
     db_password: str = Field(title='Пароль БД')

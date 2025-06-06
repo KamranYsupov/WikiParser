@@ -1,5 +1,6 @@
 from uuid import UUID
 from typing import (
+    Generic,
     Sequence,
     TypeVar,
     Type,
@@ -11,7 +12,7 @@ from app.repositories.base import ModelType
 RepositoryType = TypeVar('RepositoryType')
 
 
-class CRUDBaseService:
+class CRUDBaseService(Generic[RepositoryType, ]):
     """Класс с базовым CRUD для сервисов"""
 
     def __init__(

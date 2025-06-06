@@ -14,12 +14,3 @@ class Article(Base, UUIDMixin, TimestampedMixin):
     url: Mapped[str] = mapped_column(String)
     content: Mapped[str] = mapped_column(Text)
     summary: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
-
-    parent_id: Mapped[Optional[uuid.UUID]] = mapped_column(
-        ForeignKey('articles.id'),
-        nullable=True
-    )
-    children: Mapped[list["Article"]] = relationship(
-        back_populates='seller',
-        lazy='selectin',
-    )
