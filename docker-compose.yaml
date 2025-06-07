@@ -1,0 +1,61 @@
+version: '4.0'
+
+x-function: &python
+  volumes:
+    - ./:/app:rw
+    - poetry-volume:/opt/poetry:delegated
+  environment: &env-vars
+    POETRY_HOME: /opt/poetry
+    PYTHONPATH: /app
+  depends_on:
+    - db
+  networks:
+    - internal
+  env_file:
+    .env
+
+services:
+  db:
+    container_name: ${PROJECT_NAME}_db
+    image: postgres:14.6-alpine
+    volumes:
+      - db_data:/var/lib/postgresql/data/pgdata:rw
+    env_file:
+      - .env
+    networks:
+      - internal
+    ports:
+      - "${DB_PORT}:${DB_PORT}"
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_HOST_AUTH_METHOD: trust
+      PGDATA: /var/lib/postgresql/data/pgdata
+
+  app:
+    <<: *python
+    container_name: ${PROJECT_NAME}_app
+    build:
+      context: .
+      dockerfile: app.dockerfile
+    ports:
+      - "8000:8000"
+    restart: on-failure
+
+  nginx:
+    container_name: ${PROJECT_NAME}_nginx
+    build: ./nginx
+    ports:
+      - "80:80"
+    depends_on:
+      - app
+    networks:
+      - internal
+
+volumes:
+  db_data:
+  poetry-volume:
+
+networks:
+  internal:

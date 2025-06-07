@@ -3,6 +3,7 @@ from typing import List, Set
 
 import aiohttp
 from fastapi import HTTPException
+import loguru
 
 from app.core.config import settings
 from app.db.models import Article
@@ -59,7 +60,7 @@ class WikiParserService:
             max_depth: int = 5,
             current_depth: int = 1
     ):
-        print(title)
+        loguru.logger.info(title)
         if current_depth > max_depth or title in visited:
             return
 
@@ -67,7 +68,8 @@ class WikiParserService:
         parse_data = await self.fetch_wiki_article(session, title)
 
         content_html = parse_data.get('text', {}).get('*', )
-        url = f'{settings.wiki_base_url}/wiki/{title.replace(' ', '_')}'
+        corrected_title = title.replace(' ', '_')
+        url = f'{settings.wiki_base_url}/wiki/{corrected_title}'
 
 
         article = await self._repository_article.exists(

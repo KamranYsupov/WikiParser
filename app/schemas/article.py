@@ -1,6 +1,7 @@
 import uuid
+from typing import Optional
 
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel
 
 
 class ArticleCreate(BaseModel):
@@ -9,4 +10,4 @@ class ArticleCreate(BaseModel):
 class ArticleSchema(BaseModel):
     id: uuid.UUID
     title: str
-    summary: str
+    summary: Optional[str] = None

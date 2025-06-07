@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     openai_api_key: str = Field(title='OpenAI Api ключ')
     openai_model_name: str = Field(
         title='Имя ии модели',
-        default='deepseek/deepseek-r1-0528:free'
+        default='deepseek/deepseek-v3-base:free'
     )
     # endregion
 
