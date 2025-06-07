@@ -13,7 +13,11 @@ class Settings(BaseSettings):
         title='OpenAI base url',
         default='https://openrouter.ai/api/v1',
     )
-    openai_api_key: str = Field(default='OpenAI Api ключ')
+    openai_api_key: str = Field(title='OpenAI Api ключ')
+    openai_model_name: str = Field(
+        title='Имя ии модели',
+        default='deepseek/deepseek-r1-0528:free'
+    )
     # endregion
 
     # region Wikipedia
@@ -50,7 +54,9 @@ class Settings(BaseSettings):
     # endregion
 
     container_wiring_modules: list = [
-        'app.api.v1.endpoints.',
+        'app.api.v1.endpoints.article',
+        'app.tasks.parser',
+        'app.utils.ai',
     ]
 
     @property

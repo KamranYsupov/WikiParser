@@ -31,3 +31,18 @@ class DataBaseManager:
 
 
 db_manager = DataBaseManager(db_url=settings.db_url)
+
+
+
+def provide_session(func):
+    async def wrapper(*args, **kwargs):
+        async with db_manager.AsyncSessionLocal() as session:
+            try:
+                return await func(*args, session=session, **kwargs)
+            except Exception as e:
+                await session.rollback()
+                raise e
+            finally:
+                await session.close()
+
+    return wrapper

@@ -13,9 +13,6 @@ from app.services import (
 )
 
 class Container(containers.DeclarativeContainer):
-    db_manager = providers.Singleton(DataBaseManager, db_url=settings.db_url)
-    session = providers.Resource(db_manager().get_async_session)
-
     openai_client = providers.Singleton(
         OpenAI,
         base_url=settings.openai_base_url,
@@ -26,7 +23,6 @@ class Container(containers.DeclarativeContainer):
     repository_article = providers.Singleton(
         RepositoryArticle,
         model=Article,
-        session=session
     )
     # endregion
 

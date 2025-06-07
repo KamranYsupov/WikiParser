@@ -5,6 +5,7 @@ import aiohttp
 from fastapi import HTTPException
 
 from app.core.config import settings
+from app.db.models import Article
 from app.repositories.article import RepositoryArticle
 
 
@@ -58,7 +59,7 @@ class WikiParserService:
             max_depth: int = 5,
             current_depth: int = 1
     ):
-
+        print(title)
         if current_depth > max_depth or title in visited:
             return
 
@@ -68,13 +69,19 @@ class WikiParserService:
         content_html = parse_data.get('text', {}).get('*', )
         url = f'{settings.wiki_base_url}/wiki/{title.replace(' ', '_')}'
 
-        artice = await self._repository_article.create(
-            dict(title=title, url=url, content=content_html)
+
+        article = await self._repository_article.exists(
+            Article.title == title,
+            Article.url == url
         )
+        if not article:
+            article = await self._repository_article.create(
+                dict(title=title, url=url, content=content_html)
+            )
 
         links = self.extract_links(parse_data)
 
-        links_to_parse = links[:3]
+        links_to_parse = links[:10] # Ограничение первые 10 ссылок
 
         tasks = []
         for link_title in links_to_parse:
@@ -90,5 +97,7 @@ class WikiParserService:
 
         await asyncio.gather(*tasks)
 
-        return artice
+
+        return article
+
 

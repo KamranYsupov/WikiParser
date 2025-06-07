@@ -11,6 +11,8 @@ from typing import (
 from sqlalchemy import select, update, delete, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.db.manager import db_manager, provide_session
+
 ModelType = TypeVar("ModelType")
 
 
@@ -20,50 +22,59 @@ class RepositoryBase(Generic[ModelType,]):
     def __init__(
             self,
             model: Type[ModelType],
-            session: AsyncSession,
     ) -> None:
         self.model = model
-        self._session = session
 
+    @provide_session
     async def create(
             self,
             insert_data: dict,
+            session: Optional[AsyncSession] = None,
     ) -> ModelType:
         db_obj = self.model(**insert_data)
-
-        self._session.add(db_obj)
-        await self._session.commit()
-        await self._session.refresh(db_obj)
+        session.add(db_obj)
+        await session.commit()
+        await session.refresh(db_obj)
 
         return db_obj
 
-    async def get(self, options: List = [], **kwargs) -> Optional[ModelType]:
+    @provide_session
+    async def get(
+            self,
+            options: List = [],
+            session: Optional[AsyncSession] = None,
+            **kwargs
+    ) -> Optional[ModelType]:
         statement = select(self.model).options(*options).filter_by(**kwargs)
-        result = await self._session.execute(statement)
+        result = await session.execute(statement)
         return result.scalars().first()
 
+    @provide_session
     async def update(
             self,
             *,
             obj_id: UUID,
             insert_data: dict,
+            session: Optional[AsyncSession] = None,
     ) -> ModelType:
         statement = (
             update(self.model).
             where(self.model.id == obj_id).
             values(**insert_data)
         )
-        await self._session.execute(statement)
-        await self._session.commit()
+        await session.execute(statement)
+        await session.commit()
 
-        return await self._session.get(self.model, obj_id)
+        return await session.get(self.model, obj_id)
 
+    @provide_session
     async def list(
             self,
             *args,
             options: List = [],
             limit: Optional[int] = None,
             skip: Optional[int] = None,
+            session: Optional[AsyncSession] = None,
             **kwargs
     ):
         statement = (
@@ -74,14 +85,21 @@ class RepositoryBase(Generic[ModelType,]):
             .offset(skip)
             .limit(limit)
         )
-        result = await self._session.execute(statement)
+        result = await session.execute(statement)
         return result.scalars().all()
 
-    async def delete(self, *args, **kwargs) -> None:
+    @provide_session
+    async def delete(self, *args, session: Optional[AsyncSession] = None, **kwargs) -> None:
         statement = delete(self.model).filter(*args).filter_by(**kwargs)
-        await self._session.execute(statement)
+        await session.execute(statement)
 
-    async def exists(self, *args, **kwargs) -> Optional[ModelType]:
+    @provide_session
+    async def exists(
+            self,
+            *args,
+            session: Optional[AsyncSession] = None,
+            **kwargs,
+    ) -> Optional[ModelType]:
         statement = select(self.model).filter(or_(*args)).filter_by(**kwargs)
-        result = await self._session.execute(statement)
+        result = await session.execute(statement)
         return result.scalars().first()
