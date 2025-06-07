@@ -18,10 +18,8 @@ class CRUDBaseService(Generic[RepositoryType, ]):
     def __init__(
             self,
             repository: Type[RepositoryType],
-            unique_fields: Optional[Sequence[str]] = None,
     ):
         self._repository = repository
-        self.unique_fields = unique_fields
 
     async def get(self, **kwargs) -> ModelType:
         return await self._repository.get(**kwargs)

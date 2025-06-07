@@ -1,3 +1,4 @@
+import asyncio
 from typing import List, Set
 
 import aiohttp
@@ -55,18 +56,19 @@ class WikiParserService:
             title: str,
             visited: Set[str] = set(),
             max_depth: int = 5,
-            current_depth: int = 1):
+            current_depth: int = 1
+    ):
 
         if current_depth > max_depth or title in visited:
             return
-        visited.add(title)
 
+        visited.add(title)
         parse_data = await self.fetch_wiki_article(session, title)
 
         content_html = parse_data.get('text', {}).get('*', )
         url = f'{settings.wiki_base_url}/wiki/{title.replace(' ', '_')}'
 
-        await self._repository_article.create(
+        artice = await self._repository_article.create(
             dict(title=title, url=url, content=content_html)
         )
 
@@ -74,11 +76,19 @@ class WikiParserService:
 
         links_to_parse = links[:3]
 
+        tasks = []
         for link_title in links_to_parse:
-            await self.parse_article_recursive(
+            task = self.parse_article_recursive(
                 session=session,
                 title=link_title,
                 visited=visited,
                 max_depth=max_depth,
                 current_depth=current_depth + 1
             )
+
+            tasks.append(task)
+
+        await asyncio.gather(*tasks)
+
+        return artice
+
